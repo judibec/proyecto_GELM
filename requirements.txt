@@ -1,0 +1,7 @@
+langchain>=0.1.20
+langchain-community>=0.0.38
+langchain-openai>=0.1.17
+faiss-cpu>=1.7.4
+pypdf>=3.17.1
+docx2txt>=0.8
+python-dotenv>=1.0.1
