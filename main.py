@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_classic.chains import RetrievalQA
+from langchain_core.prompts import PromptTemplate
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader, TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -59,7 +59,10 @@ class DocumentIngestor:
 
     def _embedding_model(self):
         if self.embedding_provider == "openai":
-            return OpenAIEmbeddings(model=self.embedding_model or "text-embedding-3-large")
+            return OpenAIEmbeddings(
+                model=self.embedding_model or "text-embedding-3-large",
+                api_key="openai_apikey"
+            )
         if self.embedding_provider == "hf":
             return HuggingFaceEmbeddings(model_name=self.embedding_model or "all-MiniLM-L6-v2")
         raise ValueError(
@@ -97,7 +100,10 @@ class CodeGenerator:
 
     def _embedding_model(self):
         if self.embedding_provider == "openai":
-            return OpenAIEmbeddings(model=self.embedding_model or "text-embedding-3-large")
+            return OpenAIEmbeddings(
+                model=self.embedding_model or "text-embedding-3-large",
+                api_key="openai_apikey"
+            )
         if self.embedding_provider == "hf":
             return HuggingFaceEmbeddings(model_name=self.embedding_model or "all-MiniLM-L6-v2")
         raise ValueError("Proveedor de embeddings no soportado. Use 'openai' o 'hf'.")
@@ -110,19 +116,23 @@ class CodeGenerator:
         return vectorstore.as_retriever(search_kwargs={"k": 4})
 
     def _llm(self):
-        return ChatOpenAI(temperature=self.temperature, model=self.model_name)
+        return ChatOpenAI(
+            temperature=self.temperature,
+            model=self.model_name,
+            api_key="openai_apikey"
+        )
 
-    def generate_code(self, requirement: str) -> str:
+    def generate_code(self, prompt_user: str) -> str:
         retriever = self._retriever()
         llm = self._llm()
         template = PromptTemplate(
-            input_variables=["context", "requirement"],
+            input_variables=["context", "question"],
             template=(
                 "Eres un asistente de desarrollo. Basado en las siguientes reglas de negocio, "
                 "genera un fragmento de código claro y comentado que cumpla el requerimiento.\n"
                 "Responde solo con el código y explica brevemente cada paso como comentarios.\n"
                 "Contexto:\n{context}\n\n"
-                "Requerimiento:\n{requirement}"
+                "Requerimiento:\n{question}"
             ),
         )
 
@@ -134,7 +144,7 @@ class CodeGenerator:
             return_source_documents=False,
         )
 
-        result = chain.invoke({"query": requirement})
+        result = chain.invoke({"query": prompt_user})
         return result["result"]
 
 
@@ -190,7 +200,7 @@ def parse_args() -> argparse.Namespace:
         help="Ingesta documentos y actualiza el índice vectorial.",
     )
     parser.add_argument(
-        "--requirement",
+        "--prompt_user",
         type=str,
         default=None,
         help="Requerimiento a resolver mediante generación de código.",
@@ -218,7 +228,7 @@ def main():
         )
         ingestor.ingest()
 
-    if args.requirement:
+    if args.prompt_user:
         generator = CodeGenerator(
             vector_dir=args.vector_dir,
             embedding_provider=args.embedding_provider,
@@ -226,11 +236,11 @@ def main():
             model_name=args.model_name,
             temperature=args.temperature,
         )
-        code = generator.generate_code(args.requirement)
+        code = generator.generate_code(args.prompt_user)
         print("\n=== Fragmento generado ===\n")
         print(code)
 
-    if not args.ingest and not args.requirement:
+    if not args.ingest and not args.prompt_user:
         print(
             "Debe indicar --ingest para crear el índice y/o --requirement para generar código."
         )
@@ -238,8 +248,4 @@ def main():
 
 if __name__ == "__main__":
     # Claves API se leen de variables de entorno (OPENAI_API_KEY u otros proveedores)
-    if not os.getenv("OPENAI_API_KEY") and os.getenv("EMBEDDING_PROVIDER", "openai") == "openai":
-        print(
-            "Advertencia: OPENAI_API_KEY no está definido. Configure la clave antes de usar OpenAI."
-        )
     main()

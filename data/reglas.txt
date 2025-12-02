@@ -1,0 +1,2 @@
+Reglas
+* El cliente solo puede tener estado aprobado, rechazado, pendiente, en proceso
