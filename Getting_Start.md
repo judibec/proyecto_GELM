@@ -58,15 +58,6 @@ Notas:
 - Si usas `--requirement_file`, el contenido del archivo se envía completo al modelo.
 - Puedes combinar `--ingest` y `--requirement` en una misma ejecución para reindexar y generar código en un solo paso.
 
-## Limpieza y ubicación de resultados
-
-- El índice FAISS queda en la carpeta indicada por `--vector_dir`.
-- El fragmento generado se imprime en consola. Si quieres guardarlo, redirígelo a un archivo:
-
-  ```bash
-  python main.py --requirement "Crear CRUD de productos" --vector_dir vectores/prueba > snippet.py
-  ```
-
 ## Solución de problemas
 
 - Si ves `OPENAI_API_KEY no está definido`, exporta la variable de entorno antes de ejecutar.
