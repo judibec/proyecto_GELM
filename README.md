@@ -34,7 +34,7 @@ Estos trabajos relacionados respaldan la viabilidad del enfoque adoptado en este
 
 La solución se implementó mediante un pipeline de LangChain que combina ingestión de documentos, búsqueda semántica y generación de código. Primero, un componente ingestor (DocumentIngestor) lee los documentos de reglas de negocio (en formatos PDF, DOCX o texto), los divide en fragmentos manejables y genera representaciones vectoriales (embeddings) para cada fragmento. Estos embeddings se almacenan en un índice vectorial usando FAISS (Facebook AI Similarity Search), permitiendo recuperar rápidamente fragmentos relevantes dada una consulta. Luego, un componente generador (CodeGenerator) carga el índice vectorial y, ante una petición del usuario, utiliza un modelo generativo (por ejemplo GPT-4 a través de la API de OpenAI) para producir código. Este modelo se integra mediante la clase RetrievalQA de LangChain: al recibir una pregunta o requerimiento, primero recupera los fragmentos de reglas de negocio pertinentes (contexto) y luego alimenta tanto el contexto como la pregunta al modelo de lenguaje. El prompt utilizado instruye al modelo a generar únicamente código (p. ej., una función o segmento) acompañado de comentarios que expliquen cómo cada parte del código satisface las reglas.
 
-Para ejecutar el proyecto remitase a [Getting_Start](/Getting_Start.md)
+Para ejecutar el proyecto remitase a [Getting_Start](/Getting_Start.md) *(Este documento fue generado con ayuda de IA con fines de reproduccion del proyecto)*
 
 ## Resultados y Discusión
 
